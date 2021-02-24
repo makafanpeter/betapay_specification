@@ -1,0 +1,495 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BetaPay POS API Specification",
+    "version": "2.0",
+    "description": "The Beta Pay POS API specifications allows PTSP send transaction notification from a Point of Sale Terminal (POS) to beta pay API. \n\n## Security\n\nThe Beta Pay API would provide Basic Scheme for Authentication, \nAll API requests expected to be made over HTTPS. \n\n<table>\n<thead>\n<tr>\n<th>Name</th>\n<th>Description</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Authorization</td>\n<td>Basic Scheme</td>\n</tr>\n</tbody>\n</table>\n\n\n## Error Handling\n\nThe Beta Pay System uses conventional HTTP response codes to indicate the success or failure of an API request. In general: Codes in the 2xx range indicate success. Codes in the 4xx range indicate an error that failed given the information provided (e.g., a required parameter was omitted, etc.). Codes in the 5xx range indicate an error with the servers.\n\nAll 4xx, 5xx errors that could be handled programmatically include an error code that briefly explains the error reported.\n\n\n<table>\n<thead>\n<tr>\n<th>Name</th>\n<th>Description</th>\n<th>Schema</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>code <br/>required</td>\n<td>The Error Code</td>\n<td>string</td>\n</tr>\n<tr>\n<td>message<br/>required</td>\n<td>The Error Description</td>\n<td>String</td>\n</tr>\n</tbody>\n</table>\n\n```json json_schema\n{\n  \"code\": \"400\",\n  \"message\":\"Bad Request\"\n}\n```\n",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "description": "Beta Pay Staging ",
+      "url": "http://ec2co-ecsel-1l8zl20osz835-968814131.eu-west-1.elb.amazonaws.com"
+    }
+  ],
+  "paths": {
+    "/api/beta-pay-back-office/third-party-services/terminal/info": {
+      "post": {
+        "summary": "Get Terminal Information",
+        "operationId": "post-getinformation",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Name": {
+                      "type": "string",
+                      "description": "The Business/Owner"
+                    },
+                    "TransactionLimit": {
+                      "type": "number",
+                      "description": "The Transaction Limit to set on the terminal"
+                    },
+                    "Fee": {
+                      "type": "number",
+                      "description": "Fee to charge for each transaction"
+                    },
+                    "Address": {
+                      "type": "string",
+                      "description": "Adderess of the Owner/ Business"
+                    },
+                    "Phone": {
+                      "type": "string",
+                      "description": "Phone number of Business/Owner"
+                    }
+                  },
+                  "required": [
+                    "Name",
+                    "TransactionLimit"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error-Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error-Response"
+                }
+              }
+            }
+          }
+        },
+        "description": "Get Terminal Information",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "SerialNumber": {
+                    "type": "string",
+                    "description": "Serial Number for Terminal Making the Request"
+                  },
+                  "TerminalID": {
+                    "type": "string",
+                    "description": "Identifier for Terminal Making the Request"
+                  }
+                },
+                "required": [
+                  "TerminalID"
+                ]
+              }
+            }
+          },
+          "description": ""
+        },
+        "tags": [
+          "Get Information"
+        ]
+      },
+      "parameters": []
+    },
+    "/api/beta-pay-back-office/third-party-services/terminal/notification": {
+      "post": {
+        "summary": "Payment Notification",
+        "operationId": "post-paymentnotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "BillerReference": {
+                      "type": "string",
+                      "description": "A Unique reference from Biller System"
+                    },
+                    "AdditionalInformation": {
+                      "type": "array",
+                      "description": "Additional Information From Biller",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Name": {
+                            "type": "string"
+                          },
+                          "Value": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "BillerReference"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error-Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error-Response"
+                }
+              }
+            }
+          }
+        },
+        "description": " Endpoint used to notify the betapay of a transaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "TransactionReference": {
+                    "type": "string",
+                    "description": "Unique Transaction Reference Generated by Global Accelerex Reference"
+                  },
+                  "Reference": {
+                    "type": "string",
+                    "description": "Valid Reference on that exist on Biller System, Required if Payment type is invoice"
+                  },
+                  "Amount": {
+                    "type": "number",
+                    "description": "Transaction Amount",
+                    "minimum": 0.01
+                  },
+                  "Type": {
+                    "type": "string",
+                    "description": "The type of transaction",
+                    "enum": [
+                      "Invoice",
+                      "Purchase"
+                    ]
+                  },
+                  "RetrievalReferenceNumber": {
+                    "type": "string",
+                    "description": "The Transaction Retrieval Reference Number"
+                  },
+                  "MaskedPAN": {
+                    "type": "string",
+                    "description": "Customer Masked PAN"
+                  },
+                  "CardScheme": {
+                    "type": "string",
+                    "description": "The customer Card Scheme"
+                  },
+                  "CustomerName": {
+                    "type": "string",
+                    "description": "The card Holder name"
+                  },
+                  "StatusCode": {
+                    "type": "string",
+                    "description": "Nibbs Response Code"
+                  },
+                  "StatusDescription": {
+                    "type": "string",
+                    "description": "Nibbs Status Code Description "
+                  },
+                  "AdditionalInformation": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "Name": {
+                          "type": "string"
+                        },
+                        "Value": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "Currency": {
+                    "type": "string",
+                    "description": "Currency Used in the Transaction",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "MerchantId": {
+                    "type": "string",
+                    "description": "Terminal Merchant Identifier"
+                  },
+                  "Stan": {
+                    "type": "string",
+                    "description": "System Trace Audit Number"
+                  },
+                  "CardExpiry": {
+                    "type": "string",
+                    "description": "Customer Card Expiry"
+                  },
+                  "CardHash": {
+                    "type": "string",
+                    "description": "Customer Card Hash"
+                  },
+                  "PaymentDate": {
+                    "type": "string",
+                    "description": "The payment date format yyyy-MM-dd",
+                    "format": "date"
+                  }
+                },
+                "required": [
+                  "TransactionReference",
+                  "Amount",
+                  "RetrievalReferenceNumber",
+                  "StatusCode",
+                  "StatusDescription",
+                  "Currency",
+                  "MerchantId",
+                  "Stan",
+                  "PaymentDate"
+                ]
+              }
+            }
+          }
+        },
+        "tags": [
+          "Payment Notification"
+        ]
+      },
+      "parameters": []
+    },
+    "/api/beta-pay-back-office/third-party-services/terminal/reversal": {
+      "post": {
+        "summary": "Reversal Notification",
+        "operationId": "post-paymentreversal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "boolean"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error-Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error-Response"
+                }
+              }
+            }
+          }
+        },
+        "description": "Reversal Notification for a previouly successful transaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "TransactionReference": {
+                    "type": "string",
+                    "description": "Unique Transaction Reference From Global Accelerex Reference"
+                  },
+                  "Amount": {
+                    "type": "number",
+                    "description": "Transaction Amount",
+                    "minimum": 0.01
+                  },
+                  "Currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "description": "Currency Used In transaction"
+                  },
+                  "RetrievalReferenceNumber": {
+                    "type": "string",
+                    "description": "Retrieval Reference Number"
+                  },
+                  "PaymentDate": {
+                    "type": "string",
+                    "description": "The Transaction Date"
+                  },
+                  "Stan": {
+                    "type": "string",
+                    "description": "System Trace Audit Number"
+                  },
+                  "Reference": {
+                    "type": "string",
+                    "description": "Valid Reference on Biller System"
+                  }
+                },
+                "required": [
+                  "TransactionReference",
+                  "Amount",
+                  "PaymentDate"
+                ]
+              }
+            }
+          },
+          "description": ""
+        },
+        "tags": [
+          "Payment Reversal"
+        ]
+      },
+      "parameters": []
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Authorization": {
+        "name": "Authorization",
+        "type": "apiKey",
+        "in": "header",
+        "description": "Application access token generated on Betapay System For Authorization"
+      },
+      "SerialNumber": {
+        "name": "SerialNumber",
+        "type": "apiKey",
+        "in": "header",
+        "description": "Serial Number for Terminal Making the Request"
+      },
+      "TerminalID": {
+        "name": "TerminalID",
+        "type": "apiKey",
+        "in": "header",
+        "description": "Identifier for Terminal Making the Request"
+      }
+    },
+    "schemas": {
+      "Error-Response": {
+        "title": "Error-Response",
+        "type": "object",
+        "properties": {
+          "Message": {
+            "type": "string",
+            "description": "Error Code Description"
+          },
+          "Code": {
+            "type": "string",
+            "description": "Error Code"
+          }
+        },
+        "required": [
+          "Code",
+          "Message"
+        ],
+        "description": "Standard Error Response"
+      },
+      "Reference-Response": {
+        "title": "Reference-Response",
+        "type": "object",
+        "properties": {
+          "IsFixedAmount": {
+            "type": "boolean",
+            "description": "If Amount is Fixed"
+          },
+          "AdditionalInformation": {
+            "type": "array",
+            "description": "Additional Information",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "BusinessName": {
+            "type": "string",
+            "description": "Short Description of Business",
+            "maxLength": 20
+          },
+          "Description": {
+            "type": "string",
+            "description": "Short Description of Invoice e.g. Blue Shoes (Max 20 Chars)",
+            "maxLength": 20
+          },
+          "PaidAmount": {
+            "type": "number",
+            "description": "Amount Paid"
+          },
+          "OutStandingAmount": {
+            "type": "number",
+            "description": "Amount pending to be paid"
+          },
+          "TotalAmount": {
+            "type": "number",
+            "description": "Total Amount"
+          },
+          "Reference": {
+            "type": "string",
+            "description": "A valid reference on biller system"
+          }
+        },
+        "required": [
+          "Reference"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "Authorization": []
+    },
+    {
+      "TerminalID": []
+    },
+    {
+      "SerialNumber": []
+    }
+  ]
+}
