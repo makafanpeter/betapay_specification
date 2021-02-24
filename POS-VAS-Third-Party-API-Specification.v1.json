@@ -328,7 +328,7 @@
             }
           }
         },
-        "description": "Reversal Notification for a previouly successful transaction",
+        "description": "Reversal Notification for a previouly successful transactions",
         "requestBody": {
           "content": {
             "application/json": {
